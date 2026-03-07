@@ -4,15 +4,12 @@ from unittest.mock import MagicMock, ANY
 import pytest
 from homeassistant.components.light import ATTR_BRIGHTNESS
 from homeassistant.components.light import ATTR_COLOR_MODE
-from homeassistant.components.light import ATTR_COLOR_TEMP
 from homeassistant.components.light import ATTR_COLOR_TEMP_KELVIN
 from homeassistant.components.light import ATTR_EFFECT
 from homeassistant.components.light import ATTR_EFFECT_LIST
 from homeassistant.components.light import ATTR_HS_COLOR
 from homeassistant.components.light import ATTR_MAX_COLOR_TEMP_KELVIN
-from homeassistant.components.light import ATTR_MAX_MIREDS
 from homeassistant.components.light import ATTR_MIN_COLOR_TEMP_KELVIN
-from homeassistant.components.light import ATTR_MIN_MIREDS
 from homeassistant.components.light import ATTR_SUPPORTED_COLOR_MODES
 from homeassistant.components.light import ColorMode
 from homeassistant.components.light import DOMAIN as LIGHT_DOMAIN
@@ -40,10 +37,7 @@ async def test_light_color_state(hass: HomeAssistant, tapo_device: MagicMock):
     ]
     assert state_entity.attributes[ATTR_COLOR_MODE] == ColorMode.COLOR_TEMP
     assert state_entity.attributes[ATTR_BRIGHTNESS] == 255  # means 100 on tapo
-    assert state_entity.attributes[ATTR_COLOR_TEMP] == 154  # is merids, means 6493K
     assert state_entity.attributes[ATTR_COLOR_TEMP_KELVIN] == 6493
-    assert state_entity.attributes[ATTR_MAX_MIREDS] == 400
-    assert state_entity.attributes[ATTR_MIN_MIREDS] == 153
     assert state_entity.attributes[ATTR_MAX_COLOR_TEMP_KELVIN] == 6500
     assert state_entity.attributes[ATTR_MIN_COLOR_TEMP_KELVIN] == 2500
     assert state_entity.attributes[ATTR_HS_COLOR] == (48.348, 2.014)
@@ -73,7 +67,7 @@ async def test_light_color_service_call(hass: HomeAssistant, tapo_device: MagicM
     await hass.services.async_call(
         LIGHT_DOMAIN,
         SERVICE_TURN_ON,
-        {ATTR_ENTITY_ID: entity_id, ATTR_COLOR_TEMP: 300},
+        {ATTR_ENTITY_ID: entity_id, ATTR_COLOR_TEMP_KELVIN: 3333},
         blocking=True,
     )
     tapo_device.set_color_temperature.assert_called_with(3333)
@@ -176,7 +170,7 @@ async def test_color_temp_only_light(hass: HomeAssistant, tapo_device: MagicMock
     await hass.services.async_call(
         LIGHT_DOMAIN,
         SERVICE_TURN_ON,
-        {ATTR_ENTITY_ID: entity_id, ATTR_BRIGHTNESS: 30, ATTR_COLOR_TEMP: 300},
+        {ATTR_ENTITY_ID: entity_id, ATTR_BRIGHTNESS: 30, ATTR_COLOR_TEMP_KELVIN: 3333},
         blocking=True,
     )
     tapo_device.set_color_temperature.assert_called_with(3333)

@@ -12,9 +12,6 @@ from homeassistant.components.light import LightEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.util.color import (
-    color_temperature_kelvin_to_mired as kelvin_to_mired,
-)
 from plugp100.api.light_effect_preset import LightEffectPreset
 from plugp100.new.components.light_effect_component import LightEffectComponent
 from plugp100.new.tapobulb import TapoBulb
@@ -49,8 +46,6 @@ class TapoLightEntity(CoordinatedTapoEntity, LightEntity):
         # set homeassistant light entity attributes
         self._attr_max_color_temp_kelvin = 6500
         self._attr_min_color_temp_kelvin = 2500
-        self._attr_max_mireds = kelvin_to_mired(self._attr_min_color_temp_kelvin)
-        self._attr_min_mireds = kelvin_to_mired(self._attr_max_color_temp_kelvin)
         self._attr_supported_features = (
             LightEntityFeature.EFFECT if self._effects else LightEntityFeature(0)
         )
@@ -62,7 +57,7 @@ class TapoLightEntity(CoordinatedTapoEntity, LightEntity):
     def color_mode(self) -> ColorMode | str | None:
         if ColorMode.HS in self.supported_color_modes and self.hs_color is not None:
             return ColorMode.HS
-        elif ColorMode.COLOR_TEMP in self.supported_color_modes and self.color_temp is not None:
+        elif ColorMode.COLOR_TEMP in self.supported_color_modes and self.color_temp_kelvin is not None:
             return ColorMode.COLOR_TEMP
         elif ColorMode.BRIGHTNESS in self.supported_color_modes and self.brightness is not None:
             return ColorMode.BRIGHTNESS
@@ -93,10 +88,8 @@ class TapoLightEntity(CoordinatedTapoEntity, LightEntity):
                 return hue, saturation
 
     @property
-    def color_temp(self):
-        return tapo_to_hass_color_temperature(
-            self.device.color_temp, (self.min_mireds, self.max_mireds)
-        )
+    def color_temp_kelvin(self):
+        return tapo_to_hass_color_temperature(self.device.color_temp)
 
     @property
     def effect(self) -> Optional[str]:
@@ -114,7 +107,6 @@ class TapoLightEntity(CoordinatedTapoEntity, LightEntity):
         tapo_brightness = hass_to_tapo_brightness(brightness)
         tapo_color_temp = hass_to_tapo_color_temperature(
             color_temp,
-            (self.min_mireds, self.max_mireds),
             (self.min_color_temp_kelvin, self.max_color_temp_kelvin),
         )
 
